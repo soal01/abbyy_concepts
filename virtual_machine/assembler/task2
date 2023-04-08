@@ -1,0 +1,15 @@
+write "Enter n to calculate n-th Fib number: "
+read cx
+mov $ax 0
+mov $bx 1
+
+le:
+add $ax, $bx
+swap $ax, $bx
+# mov $dx, $bx
+# mov $bx, $ax
+# mov $ax, $dx
+sub $cx, 1
+jump le
+
+write_r bx
