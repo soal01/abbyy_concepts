@@ -6,7 +6,7 @@
 
 class VirtualMachine {
 private:
-    std::ifstream& programm;
+    std::fstream& programm;
     int ip, ax, bx, cx, dx;
     bool isEnd;
 
@@ -34,6 +34,17 @@ private:
         return ans;
     }
 
+    void write4Bytes(int addr, int val) {
+        programm.seekg(addr, std::ios::beg);
+
+        char buffer[4];
+        for (int i = 3; i >= 0; --i) {
+            buffer[i] = val % 16;
+            val /= 16;
+        }
+        programm.write(buffer, 4);
+    }
+
     void executeCurCommand() {
         executeCommand(ip);
         ip += 9;
@@ -51,6 +62,83 @@ private:
             int dataAddr = read4Bytes(addr + 1);
             int dataLen = read4Bytes(addr + 5);
             writeCommand(dataAddr, dataLen);
+            return;
+        }
+        if (commandType == 2) {
+            int destAddr = read4Bytes(addr + 1);
+            int srcAddr = read4Bytes(addr + 5);
+            int val = read4Bytes(srcAddr);
+            write4Bytes(destAddr, val);
+            return;
+        }
+        if (commandType == 3) {
+            int destAddr = read4Bytes(addr + 1);
+            int val = read4Bytes(addr + 5);
+            write4Bytes(destAddr, val);
+            return;
+        }
+        if (commandType == 4) {
+            int destAddr = read4Bytes(addr + 1);
+            int val = read4Bytes(addr + 5);
+            int destVal = read4Bytes(destAddr);
+            destVal += val;
+            write4Bytes(destAddr, destVal);
+            return;
+        }
+        if (commandType == 5) {
+            int destAddr = read4Bytes(addr + 1);
+            int srcAddr = read4Bytes(addr + 5);
+            int destVal = read4Bytes(destAddr);
+            int srcVal = read4Bytes(srcAddr);
+            destVal += srcVal;
+            write4Bytes(destAddr, destVal);
+            return;
+        }
+        if (commandType == 6) {
+            int destAddr = read4Bytes(addr + 1);
+            int val = read4Bytes(addr + 5);
+            int destVal = read4Bytes(destAddr);
+            destVal -= val;
+            write4Bytes(destAddr, destVal);
+            return;
+        }
+        if (commandType == 7) {
+            int destAddr = read4Bytes(addr + 1);
+            int srcAddr = read4Bytes(addr + 5);
+            int destVal = read4Bytes(destAddr);
+            int srcVal = read4Bytes(srcAddr);
+            destVal -= srcVal;
+            write4Bytes(destAddr, destVal);
+            return;
+        }
+        if (commandType == 8) {
+            int destAddr = read4Bytes(addr + 1);
+            int srcAddr = read4Bytes(addr + 5);
+            int destVal = read4Bytes(destAddr);
+            int srcVal = read4Bytes(srcAddr);
+            std::swap(destVal, srcVal);
+            write4Bytes(destAddr, destVal);
+            write4Bytes(srcAddr, srcVal);
+            return;
+        }
+        if (commandType == 9) {
+            int destAddr = read4Bytes(addr + 1);
+            write4Bytes(0, destAddr);
+            return;
+        }
+        if (commandType == 10) {
+            int cx = read4Bytes(12);
+            if (cx > 0) {
+                int destAddr = read4Bytes(addr + 1);
+                write4Bytes(0, destAddr);
+            }
+            return;
+        }
+        if (commandType == 11) {
+            int destAddr = read4Bytes(addr + 1);
+            int val = read4Bytes(destAddr);
+            std::cout << val;
+            return;
         }
     }
 
@@ -64,7 +152,7 @@ private:
 
 
 public:
-    VirtualMachine(std::ifstream& programm) : programm(programm), isEnd(false) {
+    VirtualMachine(std::fstream& programm) : programm(programm), isEnd(false) {
         readRegisters();
     }
 
@@ -82,7 +170,7 @@ public:
 int main(int argc, char* argv[]) {
 
     char* filename = argv[1];
-    std::ifstream programm = std::ifstream(filename, std::ios::in);
+    std::fstream programm = std::fstream(filename, std::ios::in | std::ios::out);
     VirtualMachine vm(programm);
 
     vm.execute();

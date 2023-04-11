@@ -3,13 +3,16 @@ read cx
 mov $ax 0
 mov $bx 1
 
-le:
+sub $cx, 1
+je le
+:la
 add $ax, $bx
 swap $ax, $bx
 # mov $dx, $bx
 # mov $bx, $ax
 # mov $ax, $dx
 sub $cx, 1
-jump le
+jump la
+:le
 
-write_r bx
+write_r ax
