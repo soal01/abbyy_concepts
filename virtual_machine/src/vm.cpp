@@ -8,6 +8,8 @@ class VirtualMachine {
 private:
     std::fstream& programm;
     int ip, ax, bx, cx, dx;
+    int initialIp;
+    int lastCommand;
     bool isEnd;
 
 
@@ -18,6 +20,7 @@ private:
         bx = read4Bytes(8);
         cx = read4Bytes(12);
         dx = read4Bytes(16);
+        initialIp = ip;
     }
 
     int read4Bytes(int addr) {
@@ -47,15 +50,24 @@ private:
 
     void executeCurCommand() {
         executeCommand(ip);
-        ip += 9;
+        ip = read4Bytes(0);
+        if (lastCommand != 9 && lastCommand != 0) {
+            ip += 9;
+        }
+        write4Bytes(0, ip);
     }
 
     void executeCommand(int addr) {
         programm.seekg(addr, std::ios::beg);
         char commandType = programm.get();
 
+        int cx = read4Bytes(12);
+
+        std::cout << (int)commandType << " cx: " << cx << std::endl;
+        lastCommand = commandType;
         if (commandType == 0) {
             isEnd = true;
+            write4Bytes(0, initialIp);
             return;
         }
         if (commandType == 1) {
@@ -123,21 +135,32 @@ private:
         }
         if (commandType == 9) {
             int destAddr = read4Bytes(addr + 1);
+            std::cout << "destAddr: " << destAddr << std::endl;
             write4Bytes(0, destAddr);
             return;
         }
         if (commandType == 10) {
             int cx = read4Bytes(12);
-            if (cx > 0) {
+            if (cx == 0) {
                 int destAddr = read4Bytes(addr + 1);
                 write4Bytes(0, destAddr);
+                std::cout << "destAddr: " << destAddr << std::endl;
+                lastCommand = 9;
             }
             return;
         }
         if (commandType == 11) {
             int destAddr = read4Bytes(addr + 1);
             int val = read4Bytes(destAddr);
-            std::cout << val;
+            std::cout << val << std::endl;
+            writeRegisters();
+            return;
+        }
+        if (commandType == 12) {
+            int destAddr = read4Bytes(addr + 1);
+            int val;
+            std::cin >> val;
+            write4Bytes(destAddr, val);
             return;
         }
     }
@@ -150,10 +173,23 @@ private:
         }
     }
 
+    void writeRegisters() {
+        int val = read4Bytes(0);
+        std::cout << "ip: " << val << std::endl;
+        val = read4Bytes(4);
+        std::cout << "ax: " << val << std::endl;
+        val = read4Bytes(8);
+        std::cout << "bx: " << val << std::endl;
+        val = read4Bytes(12);
+        std::cout << "cx: " << val << std::endl;
+        val = read4Bytes(16);
+        std::cout << "dx: " << val << std::endl;
+    }
 
 public:
     VirtualMachine(std::fstream& programm) : programm(programm), isEnd(false) {
         readRegisters();
+        writeRegisters();
     }
 
 
@@ -162,6 +198,7 @@ public:
         while (!isEnd) {
             executeCurCommand();
         }
+        writeRegisters();
     }
 };
 

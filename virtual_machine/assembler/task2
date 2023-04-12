@@ -1,18 +1,13 @@
 write "Enter n to calculate n-th Fib number: "
-read cx
+read $cx
 mov $ax 0
 mov $bx 1
-
-sub $cx, 1
-je le
+sub $cx 1
 :la
-add $ax, $bx
-swap $ax, $bx
-# mov $dx, $bx
-# mov $bx, $ax
-# mov $ax, $dx
-sub $cx, 1
+je le
+add $ax $bx
+swap $ax $bx
+sub $cx 1
 jump la
 :le
-
-write_r ax
+write $ax
