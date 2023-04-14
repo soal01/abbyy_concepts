@@ -32,7 +32,6 @@ private:
         for (int i = 0; i < 4; ++i) {
             ans = ans*16 + buffer[i];
         }
-        //std::cout << ans << std::endl;
         
         return ans;
     }
@@ -61,9 +60,6 @@ private:
         programm.seekg(addr, std::ios::beg);
         char commandType = programm.get();
 
-        int cx = read4Bytes(12);
-
-        std::cout << (int)commandType << " cx: " << cx << std::endl;
         lastCommand = commandType;
         if (commandType == 0) {
             isEnd = true;
@@ -135,7 +131,6 @@ private:
         }
         if (commandType == 9) {
             int destAddr = read4Bytes(addr + 1);
-            std::cout << "destAddr: " << destAddr << std::endl;
             write4Bytes(0, destAddr);
             return;
         }
@@ -144,7 +139,6 @@ private:
             if (cx == 0) {
                 int destAddr = read4Bytes(addr + 1);
                 write4Bytes(0, destAddr);
-                std::cout << "destAddr: " << destAddr << std::endl;
                 lastCommand = 9;
             }
             return;
@@ -153,7 +147,7 @@ private:
             int destAddr = read4Bytes(addr + 1);
             int val = read4Bytes(destAddr);
             std::cout << val << std::endl;
-            writeRegisters();
+            //writeRegisters();
             return;
         }
         if (commandType == 12) {
@@ -189,7 +183,7 @@ private:
 public:
     VirtualMachine(std::fstream& programm) : programm(programm), isEnd(false) {
         readRegisters();
-        writeRegisters();
+        //writeRegisters();
     }
 
 
@@ -198,7 +192,7 @@ public:
         while (!isEnd) {
             executeCurCommand();
         }
-        writeRegisters();
+        //writeRegisters();
     }
 };
 

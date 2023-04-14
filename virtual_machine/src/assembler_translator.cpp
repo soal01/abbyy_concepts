@@ -294,7 +294,6 @@ public:
                 bin_programm.put(command[0]);
                 if (lostLabels.find(i) != lostLabels.end()) {
                     command[1] = labels[lostLabels[i]]*9;
-                    std::cout << command[1] << std::endl;
                 }
                 write4bytes(addrData + data.size() + command[1]);
                 write4bytes(command[2]);
